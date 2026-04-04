@@ -33,13 +33,20 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: ha, "Noto
   );
 }
 #letter-overlay video {
+  position: absolute; inset: 0;
   width: 100%; height: 100%;
   object-fit: cover;
   display: block;
   mix-blend-mode: screen;
 }
+#blob-mask-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
 
-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; padding: 1.8rem 3rem; }
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 60; display: flex; justify-content: space-between; align-items: center; padding: 1.8rem 3rem; }
 .nav-logo { font-size: .75rem; color: rgba(232,228,220,.55); text-decoration: none; transition: color .2s; }
 .nav-logo:hover { color: var(--ink); }
 .nav-links { display: flex; gap: 2.5rem; list-style: none; }
@@ -147,6 +154,19 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; ju
 .reset-btn:hover { color: var(--ink); border-color: rgba(232,228,220,.4); }
 .reset-btn.show { display: block; }
 
+/* Cancel button — top left, shown during experience */
+.cancel-btn {
+  position: fixed; top: 1.6rem; left: 3rem; z-index: 70;
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1.5px solid rgba(232,228,220,.35);
+  background: none; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  transition: border-color .2s, background .2s;
+  color: rgba(232,228,220,.55); font-size: .9rem; line-height: 1;
+}
+.cancel-btn:hover { border-color: rgba(232,228,220,.8); background: rgba(232,228,220,.08); color: #fff; }
+.cancel-btn.show { display: flex; }
+
 .exp-footer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; display: none; flex-direction: column; align-items: center; gap: .6rem; padding: 1.8rem 2rem 2rem; background: linear-gradient(transparent, rgba(13,13,20,.85) 40%); text-align: center; }
 .exp-footer.show { display: flex; }
 .exp-footer-note { font-family: var(--mono); font-size: .52rem; letter-spacing: .1em; color: var(--muted); }
@@ -170,6 +190,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; ju
 
 <div id="letter-overlay">
   <video src="letter-animation-trimmed.mp4" autoplay loop muted playsinline></video>
+  <canvas id="blob-mask-canvas"></canvas>
 </div>
 
 <nav>
@@ -180,6 +201,8 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; ju
     <li><a href="contact.html">Contact</a></li>
   </ul>
 </nav>
+
+<button class="cancel-btn" id="cancel-btn" title="Back to start">✕</button>
 
 <div id="landing">
   <p class="label">Rachel Thuo &nbsp;·&nbsp; R&amp;D Lab</p>
@@ -254,6 +277,67 @@ function drawBg(){bgX.clearRect(0,0,W,H);bgX.fillStyle='#0d0d14';bgX.fillRect(0,
 window.addEventListener('resize',resizeBg);
 resizeBg();blobs=Array.from({length:Math.max(6,0|W/200)},()=>new Blob());drawBg();
 
+// ── OPACITY BLOBS on letter overlay (right side only) ──
+const bmc = document.getElementById('blob-mask-canvas');
+const bmx = bmc.getContext('2d');
+
+function resizeBmc(){ bmc.width = innerWidth * devicePixelRatio; bmc.height = innerHeight * devicePixelRatio; bmc.style.width = innerWidth+'px'; bmc.style.height = innerHeight+'px'; bmx.scale(devicePixelRatio, devicePixelRatio); }
+resizeBmc();
+window.addEventListener('resize', resizeBmc);
+
+// Blobs only spawn on the right 45% of the screen
+class OpacityBlob {
+  constructor(){ this.reset(); }
+  reset(){
+    const SW = innerWidth, SH = innerHeight;
+    this.x  = SW * (0.55 + Math.random() * 0.45);
+    this.y  = rand(0, SH);
+    this.r  = rand(SW * 0.06, SW * 0.18);
+    this.vx = rand(-0.3, 0.3);
+    this.vy = rand(-0.25, 0.25);
+    this.pr = rand(0, Math.PI*2);
+    this.ps = rand(0.005, 0.012);
+    this.maxA = rand(0.12, 0.32); // how bright the blob glows (screen blend)
+    this.a  = 0;
+    this.ta = this.maxA;
+    this.fi = true;
+  }
+  update(){
+    this.x += this.vx; this.y += this.vy; this.pr += this.ps;
+    if(this.fi){ this.a = Math.min(this.a + 0.004, this.ta); if(this.a >= this.ta) this.fi = false; }
+    const SW = innerWidth, SH = innerHeight;
+    // If blob drifts too far left into the transparent zone, reset it
+    if(this.x < SW * 0.5) this.vx = Math.abs(this.vx);
+    if(this.x > SW + this.r) this.reset();
+    if(this.y < -this.r) this.vy = Math.abs(this.vy);
+    if(this.y > SH + this.r) this.vy = -Math.abs(this.vy);
+    return this.r * (1 + Math.sin(this.pr) * 0.15);
+  }
+  draw(r){
+    const g = bmx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r);
+    g.addColorStop(0,   `rgba(255,255,255,${this.a})`);
+    g.addColorStop(0.5, `rgba(255,255,255,${this.a * 0.5})`);
+    g.addColorStop(1,   `rgba(255,255,255,0)`);
+    bmx.beginPath();
+    bmx.arc(this.x, this.y, r, 0, Math.PI*2);
+    bmx.fillStyle = g;
+    bmx.fill();
+  }
+}
+
+const opacityBlobs = Array.from({length: 7}, () => {
+  const b = new OpacityBlob();
+  b.a = b.maxA; b.fi = false;
+  return b;
+});
+
+function drawBmc(){
+  bmx.clearRect(0, 0, innerWidth, innerHeight);
+  for(const b of opacityBlobs) b.draw(b.update());
+  requestAnimationFrame(drawBmc);
+}
+drawBmc();
+
 // ── AUDIO ──
 let actx=null;
 function getActx(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();return actx;}
@@ -266,6 +350,7 @@ document.getElementById('stmt-close').addEventListener('click',()=>document.getE
 document.getElementById('stmt-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('open')});
 document.getElementById('btn-start').addEventListener('click',startExp);
 document.getElementById('reset-btn').addEventListener('click',resetExp);
+document.getElementById('cancel-btn').addEventListener('click',resetExp);
 
 // ── SLOT MACHINE ──
 const REELS=[
@@ -570,8 +655,10 @@ function hide(id){document.getElementById(id).classList.remove('active');}
 
 async function startExp(){
   getActx();
-  document.getElementById('btn-start').blur(); // prevent Enter re-firing this button
+  document.getElementById('btn-start').blur();
   document.getElementById('landing').classList.add('exit');
+  document.getElementById('letter-overlay').style.display = 'none';
+  document.getElementById('cancel-btn').classList.add('show');
   await sleep(700);
   show('phase1');
   const st=document.getElementById('st1');
@@ -610,6 +697,8 @@ function resetExp(){
   st.textContent='[ INITIALISING DECOMPOSITION... ]';st.classList.remove('complete');
   document.getElementById('reset-btn').classList.remove('show');
   document.getElementById('exp-footer').classList.remove('show');
+  document.getElementById('cancel-btn').classList.remove('show');
+  document.getElementById('letter-overlay').style.display = '';
   const l=document.getElementById('landing');l.classList.remove('exit');
 }
 </script>
