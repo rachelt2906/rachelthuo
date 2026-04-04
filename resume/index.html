@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Résumé — Rachel Thuo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Mono:wght@400&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: #fff; color: #3a3a3a;
+  font-family: ha, "Noto Sans SC", sans-serif;
+  font-weight: 300;
+  user-select: none;
+}
+:root {
+  --ink:     #3a3a3a;
+  --muted:   #aaaaaa;
+  --soft:    #e8e8e8;
+  --mono:    'Space Mono', monospace;
+  --display: 'Syne', ha, sans-serif;
+  --line-y:  58vh; /* raised timeline */
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.6rem 3rem;
+  background: #D6EAF8;
+  border-bottom: 1px solid #B8D9F0;
+}
+.nav-logo { font-size: .75rem; color: var(--muted); text-decoration: none; transition: color .2s; }
+.nav-logo:hover { color: var(--ink); }
+.nav-links { display: flex; gap: 2.5rem; list-style: none; flex-shrink: 0; }
+.nav-links a { font-size: .75rem; color: var(--muted); text-decoration: none; transition: color .2s; white-space: nowrap; }
+.nav-links a:hover { color: var(--ink); }
+
+/* ── SCROLL HINT ── */
+.scroll-hint {
+  position: fixed; bottom: 2.2rem; right: 3rem; z-index: 50;
+  font-family: var(--mono); font-size: .52rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted);
+  display: flex; align-items: center; gap: .6rem;
+  animation: fadeHint 3s ease 1.5s forwards;
+  opacity: 1;
+}
+.hint-arrow { font-size: .8rem; animation: nudge 1.4s ease-in-out infinite; }
+@keyframes nudge { 0%,100%{transform:translateX(0)} 50%{transform:translateX(5px)} }
+@keyframes fadeHint { 0%{opacity:1} 80%{opacity:1} 100%{opacity:0} }
+
+/* ── HORIZONTAL SCROLLER ── */
+#scroller {
+  position: fixed; inset: 0;
+  overflow: hidden;
+  cursor: default;
+}
+
+/* Wide inner track */
+#track {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  will-change: transform;
+}
+
+/* ── TIMELINE LINE ── */
+.tl-line {
+  position: absolute;
+  top: var(--line-y);
+  left: 0;
+  height: 1px;
+  background: var(--soft);
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 1s ease;
+}
+.tl-line.drawn { transform: scaleX(1); }
+
+/* ── TIMELINE NODES ── */
+.tl-node {
+  position: absolute;
+  top: var(--line-y);
+  transform: translateY(-50%);
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--muted);
+  background: #fff;
+  transition: border-color .4s, background .4s;
+}
+.tl-node.active {
+  border-color: var(--ink);
+  background: var(--ink);
+}
+
+/* ── EVENT CARDS ── */
+.tl-event {
+  position: absolute;
+  width: 300px;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .55s ease, transform .55s ease;
+}
+.tl-event.in { opacity: 1; transform: translateY(0); }
+
+/* Events above the line */
+.tl-event.above {
+  bottom: calc(100vh - var(--line-y) + 28px);
+}
+/* Events below the line (alternating) */
+.tl-event.below {
+  top: calc(var(--line-y) + 28px);
+}
+
+.ev-label {
+  font-family: var(--mono); font-size: .5rem;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: .5rem;
+}
+.ev-title {
+  font-family: var(--display);
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  font-weight: 800; letter-spacing: -.025em;
+  line-height: 1.05; color: var(--ink);
+  margin-bottom: .35rem;
+}
+.ev-sub {
+  font-size: .78rem; color: var(--muted);
+  font-style: italic; margin-top: .5rem; margin-bottom: .3rem;
+}
+.ev-year {
+  font-family: var(--mono); font-size: .5rem;
+  letter-spacing: .12em; color: var(--muted);
+  margin-bottom: .7rem;
+}
+.ev-body {
+  font-size: .8rem; line-height: 1.7;
+  color: #6a6a68;
+}
+
+/* Skills as tags */
+.ev-tags {
+  display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem;
+}
+.ev-tag {
+  font-family: var(--mono); font-size: .46rem;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); border: 1px solid var(--soft);
+  padding: .3rem .65rem;
+}
+
+/* Connector tick from node up/down to card */
+.tl-tick {
+  position: absolute;
+  top: var(--line-y);
+  width: 1px; background: var(--soft);
+  transform-origin: top center;
+  transform: scaleY(0);
+  transition: transform .4s ease .2s;
+}
+.tl-tick.drawn { transform: scaleY(1); }
+.tl-tick.above { transform-origin: bottom center; bottom: var(--line-y); top: auto; }
+
+/* ── TITLE (start of timeline) ── */
+.tl-title {
+  position: absolute;
+  top: 4.5rem;
+  left: 0;
+  opacity: 0;
+  transition: opacity .8s ease;
+}
+.tl-title.in { opacity: 1; }
+
+/* Ghost "resume" word */
+.tl-title h1 {
+  font-family: var(--display);
+  font-size: clamp(5rem, 18vw, 17rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: #f0f0f0;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Name + role sit over the ghost word */
+.tl-title-meta {
+  position: absolute;
+  top: 1.8rem;
+  left: .4rem;
+  pointer-events: none;
+}
+.tl-title-name {
+  font-family: var(--display);
+  font-size: clamp(.9rem, 1.8vw, 1.15rem);
+  font-weight: 700; letter-spacing: -.01em;
+  color: var(--ink); line-height: 1.1;
+}
+.tl-title-role {
+  font-size: .75rem; color: var(--muted);
+  margin-top: .25rem; line-height: 1.5;
+}
+
+/* ── DOTTED GRID below the timeline line ── */
+.dot-grid-below {
+  position: absolute;
+  left: 0;
+  /* starts right at the line */
+  background-image: radial-gradient(circle, #e0e0e0 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+/* ── STICK FIGURE CANVAS ── */
+#stick-canvas {
+  position: fixed;
+  left: 18vw;
+  width: 60px; height: 90px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">rt</a>
+  <ul class="nav-links">
+    <li><a href="format-generator/">Format Generator</a></li>
+    <li><a href="portfolio/">Portfolio</a></li>
+    <li><a href="contact/">Contact</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="scroller">
+  <div id="track"></div>
+</div>
+
+<canvas id="stick-canvas"></canvas>
+
+<div class="scroll-hint">
+  scroll to walk <span class="hint-arrow">→</span>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════════
+const EVENTS = [
+  {
+    id: 'edu',
+    label: 'Education',
+    title: 'BSc Computer Science\n& Mathematics',
+    sub: 'Lancaster University',
+    body: '',
+    tags: ['UX / UI Design', 'Artificial Intelligence', 'Systems Thinking'],
+    side: 'above',
+  },
+  {
+    id: 'intern',
+    label: 'Internship',
+    title: 'Immersive & IoT\nIntern',
+    sub: 'Digital Catapult',
+    year: '2022 – 2023',
+    body: '',
+    tags: ['Immersive Digital Twin', 'Interaction Design', 'System Integration', 'AR & XR Platforms', 'National AR Hackathon'],
+    side: 'below',
+  },
+  {
+    id: 'rd',
+    label: 'R&D',
+    title: 'Creative R&D',
+    sub: 'Digital Catapult',
+    year: '2023 – Present',
+    body: '',
+    tags: ['Ethical AI Experience Design', 'Persona Development', 'Journey Mapping', 'Spatial Technology', 'Stakeholder Facilitation', 'SXSW 2024'],
+    side: 'above',
+  },
+  {
+    id: 'harbour',
+    label: 'Co-founder',
+    title: 'Co-founder &\nExperience Designer',
+    sub: 'The Harbourers Theatre Company',
+    year: '2025 – Present',
+    body: '',
+    tags: ['Immersive IP Development', 'Live Performance', 'Haptic Wearables', 'Spatial Design', 'Edinburgh Fringe 2025'],
+    side: 'below',
+  },
+  {
+    id: 'skills',
+    label: 'Skills',
+    title: 'Capabilities',
+    sub: '',
+    body: '',
+    tags: [
+      'Storyboarding & Visual Narrative',
+      'AI Agents',
+      'Multi-sensory Installations',
+      'Adobe Creative Suite',
+      '3D Asset & Environment Prototyping',
+      'Unity',
+      'Figma',
+      'Canva',
+    ],
+    side: 'above',
+  },
+];
+
+// ════════════════════════════════════════════
+// LAYOUT CONFIG
+// ════════════════════════════════════════════
+const MARGIN_LEFT  = 180;   // px before title
+const TITLE_W      = 400;   // px for title block
+const GAP_AFTER_TITLE = 220;
+const EVENT_SPACING   = 380; // px between events
+const MARGIN_RIGHT    = 300;
+
+const totalW = MARGIN_LEFT + TITLE_W + GAP_AFTER_TITLE +
+               EVENTS.length * EVENT_SPACING + MARGIN_RIGHT;
+
+const lineY = window.innerHeight * 0.58;
+
+// ════════════════════════════════════════════
+// BUILD DOM
+// ════════════════════════════════════════════
+const track = document.getElementById('track');
+track.style.width = totalW + 'px';
+
+// Timeline line
+const line = document.createElement('div');
+line.className = 'tl-line';
+line.style.top  = lineY + 'px';
+line.style.width = totalW + 'px';
+track.appendChild(line);
+setTimeout(() => line.classList.add('drawn'), 300);
+
+// Title block
+const titleEl = document.createElement('div');
+titleEl.className = 'tl-title';
+titleEl.style.left = MARGIN_LEFT + 'px';
+titleEl.innerHTML = `
+  <h1>resume</h1>
+  <div class="tl-title-meta">
+    <p class="tl-title-name">Rachel Thuo</p>
+    <p class="tl-title-role">Experience Designer &amp; Creative Technologist</p>
+  </div>
+`;
+track.appendChild(titleEl);
+setTimeout(() => titleEl.classList.add('in'), 500);
+
+// Dotted grid below the timeline line
+const dotGrid = document.createElement('div');
+dotGrid.className = 'dot-grid-below';
+dotGrid.style.top    = lineY + 'px';
+dotGrid.style.width  = totalW + 'px';
+dotGrid.style.height = (window.innerHeight - lineY) + 'px';
+track.appendChild(dotGrid);
+
+const eventXStart = MARGIN_LEFT + TITLE_W + GAP_AFTER_TITLE;
+const nodeEls = [];
+const eventEls = [];
+const tickEls = [];
+
+EVENTS.forEach((ev, i) => {
+  const x = eventXStart + i * EVENT_SPACING;
+
+  // Node on the line
+  const node = document.createElement('div');
+  node.className = 'tl-node';
+  node.style.left = x + 'px';
+  node.style.top  = lineY + 'px';
+  track.appendChild(node);
+  nodeEls.push(node);
+
+  // Tick line
+  const TICK_H = 36;
+  const tick = document.createElement('div');
+  tick.className = 'tl-tick' + (ev.side === 'above' ? ' above' : '');
+  tick.style.left   = x + 'px';
+  tick.style.height = TICK_H + 'px';
+  if (ev.side === 'above') {
+    tick.style.bottom = (window.innerHeight - lineY) + 'px';
+    tick.style.top    = 'auto';
+  } else {
+    tick.style.top = lineY + 'px';
+  }
+  track.appendChild(tick);
+  tickEls.push(tick);
+
+  // Event card
+  const card = document.createElement('div');
+  card.className = `tl-event ${ev.side}`;
+  card.style.left = (x - 10) + 'px';
+
+  let inner = `<p class="ev-label">${ev.label}</p>`;
+  inner += `<p class="ev-title">${ev.title.replace('\n','<br>')}</p>`;
+  if (ev.sub)  inner += `<p class="ev-sub">${ev.sub}</p>`;
+  if (ev.year) inner += `<p class="ev-year">${ev.year}</p>`;
+  if (ev.body) inner += `<p class="ev-body">${ev.body}</p>`;
+  if (ev.tags) {
+    inner += `<div class="ev-tags">${ev.tags.map(t=>`<span class="ev-tag">${t}</span>`).join('')}</div>`;
+  }
+  card.innerHTML = inner;
+  track.appendChild(card);
+  eventEls.push(card);
+});
+
+// ════════════════════════════════════════════
+// SCROLL STATE
+// ════════════════════════════════════════════
+let scrollX  = 0;
+let targetX  = 0;
+let velocity = 0;
+const maxScroll = totalW - window.innerWidth;
+
+// Smooth scroll with inertia
+window.addEventListener('wheel', e => {
+  e.preventDefault();
+  targetX += e.deltaY + e.deltaX;
+  targetX  = Math.max(0, Math.min(maxScroll, targetX));
+}, { passive: false });
+
+// Touch support
+let touchStartX = 0;
+window.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+window.addEventListener('touchmove',  e => {
+  const dx = touchStartX - e.touches[0].clientX;
+  targetX  = Math.max(0, Math.min(maxScroll, targetX + dx));
+  touchStartX = e.touches[0].clientX;
+}, { passive: false });
+
+// ════════════════════════════════════════════
+// STICK FIGURE
+// ════════════════════════════════════════════
+const stickCanvas = document.getElementById('stick-canvas');
+stickCanvas.style.top = (lineY - 88) + 'px';
+const sCtx = stickCanvas.getContext('2d');
+stickCanvas.width  = 60;
+stickCanvas.height = 90;
+
+let walkPhase = 0;
+let lastScrollX = 0;
+
+function drawStick(phase) {
+  const c = sCtx;
+  c.clearRect(0, 0, 60, 90);
+
+  c.strokeStyle = '#3a3a3a';
+  c.lineWidth   = 2;
+  c.lineCap     = 'round';
+  c.lineJoin    = 'round';
+
+  const cx = 30, headY = 14, headR = 9;
+  const shoulderY = headY + headR + 2;
+  const hipY      = shoulderY + 22;
+  const footY     = hipY + 26;
+  const legSwing  = Math.sin(phase) * 13;   // how far feet swing side to side
+
+  // Head
+  c.beginPath();
+  c.arc(cx, headY, headR, 0, Math.PI * 2);
+  c.stroke();
+
+  // Body
+  c.beginPath();
+  c.moveTo(cx, shoulderY);
+  c.lineTo(cx, hipY);
+  c.stroke();
+
+  // Arms — opposite swing to legs, simple straight lines
+  const armSwing = Math.sin(phase) * 11;
+  c.beginPath();
+  c.moveTo(cx, shoulderY + 6);
+  c.lineTo(cx - 11 + armSwing, shoulderY + 18);
+  c.stroke();
+  c.beginPath();
+  c.moveTo(cx, shoulderY + 6);
+  c.lineTo(cx + 11 - armSwing, shoulderY + 18);
+  c.stroke();
+
+  // Legs — straight lines, no knees
+  // Left leg swings forward when right leg is back
+  c.beginPath();
+  c.moveTo(cx - 2, hipY);
+  c.lineTo(cx - 2 - legSwing, footY);
+  c.stroke();
+
+  // Right leg opposite
+  c.beginPath();
+  c.moveTo(cx + 2, hipY);
+  c.lineTo(cx + 2 + legSwing, footY);
+  c.stroke();
+}
+
+// ════════════════════════════════════════════
+// VISIBILITY CHECK
+// ════════════════════════════════════════════
+function checkVisibility() {
+  const viewLeft  = scrollX;
+  const viewRight = scrollX + window.innerWidth;
+  const triggerZone = window.innerWidth * 0.65; // px from left of viewport
+
+  EVENTS.forEach((ev, i) => {
+    const x = eventXStart + i * EVENT_SPACING;
+    const screenX = x - scrollX;
+
+    if (screenX < triggerZone) {
+      nodeEls[i].classList.add('active');
+      tickEls[i].classList.add('drawn');
+      eventEls[i].classList.add('in');
+    }
+  });
+}
+
+// ════════════════════════════════════════════
+// MAIN LOOP
+// ════════════════════════════════════════════
+function loop() {
+  // Smooth scroll
+  const dx = targetX - scrollX;
+  scrollX += dx * 0.1;
+  if (Math.abs(dx) < 0.1) scrollX = targetX;
+
+  // Move track
+  track.style.transform = `translateX(${-scrollX}px)`;
+
+  // Walk phase from scroll delta
+  const delta = scrollX - lastScrollX;
+  if (Math.abs(delta) > 0.05) {
+    walkPhase += delta * 0.045;
+  }
+  lastScrollX = scrollX;
+
+  // Draw stick figure
+  drawStick(walkPhase);
+
+  // Check events
+  checkVisibility();
+
+  requestAnimationFrame(loop);
+}
+
+loop();
+
+// Handle resize
+window.addEventListener('resize', () => {
+  targetX = Math.min(targetX, totalW - window.innerWidth);
+});
+</script>
+</body>
+</html>

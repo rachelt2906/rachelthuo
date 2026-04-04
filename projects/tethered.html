@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tethered — Rachel Thuo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  background-color: #0c0b0f;
+  color: #e8e4dc;
+  margin: 0;
+  font-size: 16px;
+  font-family: 'Jost', ha, sans-serif;
+  font-weight: 300;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+:root {
+  --bg:      #0c0b0f;
+  --bg2:     #111018;
+  --ink:     #e8e4dc;
+  --muted:   #6a6672;
+  --soft:    #222028;
+  --purple:  #7B5EA7;
+  --blue:    #3B6EB5;
+  --mono:    'Space Mono', monospace;
+  --display: 'Syne', ha, sans-serif;
+  --body:    'Jost', ha, sans-serif;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.8rem 3.5rem;
+  background: transparent;
+  transition: background 0.4s, border-color 0.4s;
+  border-bottom: 1px solid transparent;
+}
+nav.scrolled {
+  background: rgba(12, 11, 15, 0.92);
+  backdrop-filter: blur(12px);
+  border-color: var(--soft);
+}
+.nav-logo { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.12em; color: rgba(232,228,220,0.4); text-decoration: none; transition: color 0.2s; }
+.nav-logo:hover { color: var(--ink); }
+.nav-back  { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.12em; color: rgba(232,228,220,0.4); text-decoration: none; transition: color 0.2s; }
+.nav-back:hover  { color: var(--ink); }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 3.5rem 4.5rem;
+  overflow: hidden;
+}
+
+.hero-image {
+  position: absolute; inset: 0;
+  background: url('tethered-hero.jpg') center center / cover no-repeat;
+  filter: brightness(0.32) saturate(1.3);
+  z-index: 0;
+}
+
+/* halftone dot overlay — references the poster aesthetic */
+.hero-halftone {
+  position: absolute; inset: 0; z-index: 1;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.055) 1px, transparent 1px);
+  background-size: 4px 4px;
+  pointer-events: none;
+}
+
+/* stage lighting gradients */
+.hero-light {
+  position: absolute; inset: 0; z-index: 2;
+  background:
+    radial-gradient(ellipse 55% 50% at 78% 38%, rgba(59,110,181,0.28) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 55% at 18% 65%, rgba(123,94,167,0.22) 0%, transparent 60%),
+    linear-gradient(to top, rgba(12,11,15,0.95) 0%, rgba(12,11,15,0.15) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+.hero-content { position: relative; z-index: 10; }
+
+.hero-tag {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: rgba(232,228,220,0.38);
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  display: flex; align-items: center; gap: 0.8rem;
+}
+.hero-tag::before { content: '→'; color: var(--purple); }
+
+.hero-title {
+  font-family: var(--display);
+  font-size: clamp(5rem, 13vw, 13rem);
+  font-weight: 800;
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+.hero-bottom {
+  margin-top: 2.5rem;
+  padding-top: 1.8rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.hero-sub {
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  font-weight: 300;
+  color: rgba(232,228,220,0.5);
+  line-height: 1.6;
+}
+
+.hero-meta { display: flex; gap: 3rem; flex-wrap: wrap; }
+.hm-item   { display: flex; flex-direction: column; gap: 0.3rem; }
+.hm-k { font-family: var(--mono); font-size: 0.55rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.hm-v { font-size: 0.85rem; color: rgba(232,228,220,0.8); }
+
+.hero-scroll {
+  position: absolute; bottom: 2rem; left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-family: var(--mono); font-size: 0.52rem;
+  letter-spacing: 0.2em; color: var(--muted);
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+}
+.scroll-line { width: 1px; height: 36px; background: linear-gradient(to bottom, var(--muted), transparent); }
+
+/* ── BODY ── */
+.body-wrap {
+  background: var(--bg2);
+  position: relative;
+}
+.body-wrap::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 5px 5px;
+  pointer-events: none; z-index: 0;
+}
+
+/* ── IMAGE GRID ── */
+.image-grid {
+  position: relative; z-index: 1;
+  padding: 5rem 3.5rem 0;
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 3px;
+}
+
+.img-block { overflow: hidden; position: relative; background: #1a1820; }
+.img-block.tall { grid-row: span 2; }
+
+.img-block img {
+  width: 100%; height: 100%;
+  display: block;
+  object-fit: cover;
+  filter: saturate(0.88) brightness(0.88);
+  transition: filter 0.45s ease, transform 0.55s ease;
+}
+.img-block:hover img {
+  filter: saturate(1.1) brightness(1);
+  transform: scale(1.025);
+}
+
+/* image crops to show the 3 distinct parts of the collage */
+.crop-poster  { object-position: 15% center; }
+.crop-stage   { object-position: 85% 25%; }
+.crop-audience{ object-position: 85% 75%; }
+
+/* ── CONTENT ── */
+.content {
+  position: relative; z-index: 1;
+  padding: 5rem 3.5rem;
+  max-width: 760px;
+}
+
+.section-label {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--purple);
+  display: block;
+  margin-bottom: 1.2rem;
+}
+
+.accent-rule { width: 36px; height: 2px; background: var(--purple); margin-bottom: 1.8rem; border-radius: 1px; }
+
+.content h2 {
+  font-family: var(--display);
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: var(--ink);
+  margin-bottom: 1.4rem;
+  margin-top: 3rem;
+}
+.content h2:first-of-type { margin-top: 0; }
+
+.content p {
+  font-size: 0.95rem;
+  line-height: 1.9;
+  color: rgba(232,228,220,0.55);
+  margin-bottom: 1.1rem;
+  max-width: 600px;
+}
+
+/* ── FULL BLEED ── */
+.full-bleed {
+  position: relative; z-index: 1;
+  overflow: hidden;
+  background: var(--bg);
+}
+.full-bleed img {
+  width: 100%; height: 56vh;
+  display: block;
+  object-fit: cover;
+  object-position: center 42%;
+  filter: saturate(0.85) brightness(0.75);
+}
+.full-bleed::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 90% at 65% 50%, rgba(59,110,181,0.18) 0%, transparent 65%),
+    linear-gradient(to top, rgba(12,11,15,0.5) 0%, transparent 50%),
+    linear-gradient(to bottom, rgba(12,11,15,0.3) 0%, transparent 30%);
+  pointer-events: none;
+}
+
+/* ── DIVIDER ── */
+.divider { position: relative; z-index: 1; height: 1px; background: var(--soft); margin: 0 3.5rem; }
+
+/* ── PROJECT NAV ── */
+.project-nav {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--soft);
+  padding: 2.5rem 3.5rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.project-nav a {
+  font-family: var(--mono); font-size: 0.62rem;
+  letter-spacing: 0.1em; color: var(--muted);
+  text-decoration: none; transition: color 0.2s;
+}
+.project-nav a:hover { color: var(--ink); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 800px) {
+  nav, .project-nav { padding: 1.5rem; }
+  .hero { padding: 0 1.5rem 3.5rem; }
+  .image-grid { grid-template-columns: 1fr; padding: 3rem 1.5rem 0; }
+  .img-block.tall { grid-row: auto; }
+  .content { padding: 3.5rem 1.5rem; }
+  .divider { margin: 0 1.5rem; }
+  .full-bleed img { height: 38vh; }
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a class="nav-logo" href="../rachel-thuo-portfolio.html">rt</a>
+  <a class="nav-back" href="../rachel-thuo-portfolio.html">← back</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-image"></div>
+  <div class="hero-halftone"></div>
+  <div class="hero-light"></div>
+
+  <div class="hero-content">
+    <p class="hero-tag">05 / 07 &nbsp;·&nbsp; Performance</p>
+    <h1 class="hero-title">Tethered</h1>
+    <div class="hero-bottom">
+      <p class="hero-sub">
+        Immersive Live Theatre Performance<br>
+        By The Harbourers
+      </p>
+      <div class="hero-meta">
+        <div class="hm-item"><span class="hm-k">Role</span><span class="hm-v">Experience Designer / Producer</span></div>
+        <div class="hm-item"><span class="hm-k">Type</span><span class="hm-v">Performance</span></div>
+        <div class="hm-item"><span class="hm-k">Year</span><span class="hm-v">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    scroll
+  </div>
+</section>
+
+<!-- BODY -->
+<div class="body-wrap">
+
+  <!-- IMAGE GRID: crops from the single uploaded image to show all three panels -->
+  <div class="image-grid">
+    <div class="img-block tall">
+      <img src="tethered-hero.jpg" alt="Tethered — poster" class="crop-poster">
+    </div>
+    <div class="img-block">
+      <img src="tethered-hero.jpg" alt="Tethered — performers on stage" class="crop-stage">
+    </div>
+    <div class="img-block">
+      <img src="tethered-hero.jpg" alt="Tethered — audience in the blue light" class="crop-audience">
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="content">
+    <span class="section-label">Overview</span>
+    <div class="accent-rule"></div>
+    <h2>An immersive dance-theatre experience</h2>
+    <p>Add your project description here — the brief, the context, and what you were brought in to create. What made Tethered distinctive as an immersive experience?</p>
+    <p>Describe the collaboration with The Harbourers and what you were responsible for as Experience Designer and Producer.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- FULL BLEED -->
+  <div class="full-bleed">
+    <img src="tethered-hero.jpg" alt="Tethered — full performance view" style="object-position: 75% center;">
+  </div>
+
+  <!-- APPROACH + OUTCOME -->
+  <div class="content">
+    <span class="section-label">Approach &amp; Outcome</span>
+    <div class="accent-rule"></div>
+    <h2>Process</h2>
+    <p>Describe how you approached the experience design — the spatial thinking, the audience journey, the technical and creative decisions that shaped the work.</p>
+    <h2>Outcome</h2>
+    <p>What was the result? How did audiences respond, what was the reception, and what did this project teach you?</p>
+  </div>
+
+</div>
+
+<div class="project-nav">
+  <a href="hb-website.html">← HB Website</a>
+  <a href="tunnel-groove.html">Tunnel Groove →</a>
+</div>
+
+<script>
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40), { passive: true });
+</script>
+</body>
+</html>
