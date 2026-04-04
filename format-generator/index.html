@@ -13,6 +13,32 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: ha, "Noto
 
 #bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
 
+/* Letter animation overlay — transparent left half, subtle fade, 80% far right */
+#letter-overlay {
+  position: fixed; inset: 0; z-index: 2;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    transparent 55%,
+    rgba(0,0,0,0.12) 68%,
+    rgba(0,0,0,0.80) 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    transparent 55%,
+    rgba(0,0,0,0.12) 68%,
+    rgba(0,0,0,0.80) 100%
+  );
+}
+#letter-overlay video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  mix-blend-mode: screen;
+}
+
 nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; padding: 1.8rem 3rem; }
 .nav-logo { font-size: .75rem; color: rgba(232,228,220,.55); text-decoration: none; transition: color .2s; }
 .nav-logo:hover { color: var(--ink); }
@@ -142,19 +168,23 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; ju
 <body>
 <canvas id="bg"></canvas>
 
+<div id="letter-overlay">
+  <video src="letter-animation-trimmed.mp4" autoplay loop muted playsinline></video>
+</div>
+
 <nav>
-  <a class="nav-logo" href="/">rt</a>
+  <a class="nav-logo" href="index.html">rt</a>
   <ul class="nav-links">
     <li><a href="#" class="active">Format Generator</a></li>
-    <li><a href="/portfolio/">Portfolio</a></li>
-    <li><a href="/contact/">Contact</a></li>
+    <li><a href="portfolio.html">Portfolio</a></li>
+    <li><a href="contact.html">Contact</a></li>
   </ul>
 </nav>
 
 <div id="landing">
   <p class="label">Rachel Thuo &nbsp;·&nbsp; R&amp;D Lab</p>
   <h1 class="title">Format<br>Generator</h1>
-  <p class="subtitle">An experimental tool for generating creative formats — briefs, structures and frameworks for immersive experience.</p>
+  <p class="subtitle">A live demonstration of a proprietary design methodology — generating original 2D, 3D and spatial experience formats from first principles. Each output is a new way for audiences to move through, perceive, and relate to the world.</p>
   <div class="btn-group">
     <button class="btn-statement" id="btn-stmt">Creator's Statement</button>
     <button class="btn-start" id="btn-start">Start &nbsp;<span class="arr">→</span></button>
@@ -164,7 +194,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; ju
 <div class="stmt-overlay" id="stmt-overlay">
   <div class="stmt-box">
     <p class="stmt-title">Creator's Statement</p>
-    <p class="stmt-text">I made this tool as a way to externalise my process. Every project starts with a format — a shape, a set of rules, a frame within which something can happen. This generator draws from the vocabularies of immersive design, live performance, and digital experience to help you find yours.<br><br>It is not a formula. It is a starting point — an invitation to begin somewhere unexpected, then make it your own.</p>
+    <p class="stmt-text">By fusing systems engineering, behavioural science and design thinking, I have developed a proprietary methodology for generating entirely new immersive experience formats — not by combining what already exists, but by identifying the invisible assumptions that govern how audiences perceive, move, and relate, and deliberately redesigning them.<br><br>The result is a design system capable of producing unique spatial, sensory and multi-dimensional worlds from any live experience format, technology, or experiential constraint — each one a distinct structure for how people inhabit, feel, and navigate a shared space.<br><br>What you are about to see are three worlds generated from a single material. One material. Infinite realities.</p>
     <button class="stmt-close" id="stmt-close">✕ &nbsp; Close</button>
   </div>
 </div>
@@ -204,7 +234,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; ju
 <button class="reset-btn" id="reset-btn">↺ &nbsp; Restart</button>
 
 <div class="exp-footer" id="exp-footer">
-  <p class="exp-footer-note">All formats have been derived from my experiential systems design methodology.</p>
+  <p class="exp-footer-note">These experiences are outputs of a proprietary Experience Systems Design methodology — a framework capable of generating original spatial, sensory and multi-dimensional worlds from any live experience format or technology.</p>
   <p class="exp-footer-cta">Interested in activating these experiences? Let's chat.</p>
   <a href="/contact/" class="exp-footer-btn">Contact →</a>
 </div>
@@ -391,12 +421,37 @@ async function typeText(el, text, delay=18) {
   }
 }
 
+// Skip flag — set to true to fast-forward current typing
+let skipTyping = false;
+
+function enableSkip() {
+  skipTyping = false;
+  function onSkip() {
+    skipTyping = true;
+  }
+  document.addEventListener('keydown', onSkip);
+  document.addEventListener('click', onSkip);
+  return () => {
+    document.removeEventListener('keydown', onSkip);
+    document.removeEventListener('click', onSkip);
+    skipTyping = false;
+  };
+}
+
 // Voiced typewriter — pauses reflect natural spoken rhythm
 async function typeTextVoiced(el, text) {
   const textNode = document.createTextNode('');
   const cursor = el.querySelector('.cursor');
   cursor ? el.insertBefore(textNode, cursor) : el.appendChild(textNode);
+
+  const removeSkip = enableSkip();
+
   for (let i = 0; i < text.length; i++) {
+    if (skipTyping) {
+      // Instantly complete the rest
+      textNode.nodeValue = text;
+      break;
+    }
     const ch   = text[i];
     const prev = i > 0 ? text[i - 1] : '';
     textNode.nodeValue = text.slice(0, i + 1);
@@ -409,6 +464,8 @@ async function typeTextVoiced(el, text) {
     else                             delay = 48  + Math.random() * 21;
     await sleep(delay);
   }
+
+  removeSkip();
 }
 
 // Wait for Enter key or tap on the prompt
@@ -419,6 +476,7 @@ function waitForEnter(term) {
     promptRow.style.animation = 'pulse-prompt 1.5s ease-in-out infinite';
     promptRow.style.cursor = 'pointer';
     term.appendChild(promptRow);
+    // Small delay so any in-flight skip click doesn't immediately advance
     setTimeout(() => promptRow.classList.add('in'), 40);
 
     let done = false;
@@ -437,8 +495,8 @@ function waitForEnter(term) {
     function onClick() { cleanup(); }
 
     document.addEventListener('keydown', onKey);
-    // attach to the prompt itself only — not the whole document
-    setTimeout(() => promptRow.addEventListener('click', onClick), 200);
+    // Delay before enabling click so a skip-click doesn't instantly advance
+    setTimeout(() => promptRow.addEventListener('click', onClick), 500);
   });
 }
 
