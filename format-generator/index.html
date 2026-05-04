@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Format Generator — Rachel Thuo</title>
+<title>Format Generator- Rachel Thuo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Mono:wght@400;700&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
 <style>
@@ -201,7 +201,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 60; display: flex; ju
 <div id="landing">
   <p class="label">Rachel Thuo &nbsp;·&nbsp; R&amp;D Lab</p>
   <h1 class="title">Format<br>Generator</h1>
-  <p class="subtitle">A live demonstration of a proprietary design methodology — generating original 2D, 3D and spatial experience formats from first principles. Each output is a new way for audiences to move through, perceive, and relate to the world.</p>
+  <p class="subtitle">A live demonstration of the Experience System Design Methodology, devised by Rachel Thuo- a method to consistently generate original 3D and spatial experiential formats. Each output is a new way for audiences to move through and experience the world, art and technology.</p>
   <div class="btn-group">
     <button class="btn-statement" id="btn-stmt">Creator's Statement</button>
     <button class="btn-start" id="btn-start">Start &nbsp;<span class="arr">→</span></button>
@@ -211,7 +211,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 60; display: flex; ju
 <div class="stmt-overlay" id="stmt-overlay">
   <div class="stmt-box">
     <p class="stmt-title">Creator's Statement</p>
-    <p class="stmt-text">By fusing systems engineering, behavioural science and design thinking, I have developed a proprietary methodology for generating entirely new immersive experience formats — not by combining what already exists, but by identifying the invisible assumptions that govern how audiences perceive, move, and relate, and deliberately redesigning them.<br><br>The result is a design system capable of producing unique spatial, sensory and multi-dimensional worlds from any live experience format, technology, or experiential constraint — each one a distinct structure for how people inhabit, feel, and navigate a shared space.<br><br>What you are about to see are three worlds generated from a single material. One material. Infinite realities.</p>
+    <p class="stmt-text">By fusing systems engineering, behavioural science and design thinking, Rachel has developed a  methodology for generating  new immersive experience formats- not by combining what already exists, but by identifying the invisible assumptions that govern how audiences currently perceive, move, and relate, and deliberately redesigning them. The result is a design system capable of producing infinite spatial and multi-sensory experiences.<br><br>Rachel's educational background in computer science and professional experience in the creative industries converge in this exploration of formats.<br><br>If you are interested in bringing to life any of the examples shown in this demo, or through the wider methodology, get in touch.</p>
     <button class="stmt-close" id="stmt-close">✕ &nbsp; Close</button>
   </div>
 </div>
@@ -251,7 +251,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 60; display: flex; ju
 <button class="reset-btn" id="reset-btn">↺ &nbsp; Restart</button>
 
 <div class="exp-footer" id="exp-footer">
-  <p class="exp-footer-note">These experiences are outputs of a proprietary Experience Systems Design methodology — a framework capable of generating original spatial, sensory and multi-dimensional worlds from any live experience format or technology.</p>
+  <p class="exp-footer-note">These experiences are outputs of a proprietary Experience Systems Design methodology- a framework capable of generating original spatial, sensory and multi-dimensional worlds from any live experience format or technology.</p>
   <p class="exp-footer-cta">Interested in activating these experiences? Let's chat.</p>
   <a href="/contact/" class="exp-footer-btn">Contact →</a>
 </div>
@@ -449,20 +449,20 @@ const FORMATS = [
   {
     num: '01',
     name: 'THRESHOLD',
-    tag: 'Spatial Audio — Attention',
-    body: 'The installation only produces sound, only speaks, when no one is listening for it. Sensors track orientation, attention, stillness. The moment a visitor stops and faces the work with intent, the sound retreats. It exists at the edge of perception — audible only when you are occupied with something else, only when you have forgotten to listen. You cannot experience it directly. You can only notice, afterwards, that something was there.'
+    tag: 'Spatial Audio- Attention',
+    body: 'The installation only produces sound, only speaks, when no one is listening for it. Sensors track orientation, attention, stillness. The moment a visitor stops and faces the work with intent, the sound retreats. It exists at the edge of perception- audible only when you are occupied with something else, only when you have forgotten to listen. You cannot experience it directly. You can only notice, afterwards, that something was there.'
   },
   {
     num: '02',
     name: 'THE ECLIPSE',
-    tag: 'Spatial Audio — Navigation',
+    tag: 'Spatial Audio- Navigation',
     body: 'The content is mapped to fixed points in the physical space. However, the system is programmed to mute or "eclipse" any audio source that the participant is currently standing near. The act of listening is transformed into a physical, deductive puzzle. To "fill in the blanks" of the scene, the audience must constantly migrate through the space, mentally assembling the fragments of the experience they are not currently blocking.'
   },
   {
     num: '03',
     name: 'ECHO CHAMBER',
-    tag: 'Spatial Audio — Memory',
-    body: 'The installation does not produce sound. It repositions yours. Microphones and spatial audio processing capture every ambient sound in the room — breath, footsteps, the creak of a jacket, a half-swallowed cough — and play it back, delayed by seconds, spatially relocated to somewhere else in the space. You hear yourself from across the room. You hear a stranger\'s breath from directly behind you. The room becomes a slow accumulation of its own acoustic memory. Everything is displaced.'
+    tag: 'Spatial Audio- Memory',
+    body: 'The installation does not produce sound. It repositions yours. Microphones and spatial audio processing capture every ambient sound in the room- breath, footsteps, the creak of a jacket, a half-swallowed cough- and play it back, delayed by seconds, spatially relocated to somewhere else in the space. You hear yourself from across the room. You hear a stranger\'s breath from directly behind you. The room becomes a slow accumulation of its own acoustic memory. Everything is displaced.'
   }
 ];
 
@@ -598,7 +598,7 @@ async function runTerminal() {
     }
 
     // Format header
-    const headerRow = makeLine('//  ', `FORMAT ${f.num} — ${f.name}`, 'head');
+    const headerRow = makeLine('//  ', `FORMAT ${f.num}- ${f.name}`, 'head');
     term.appendChild(headerRow);
     await sleep(80); headerRow.classList.add('in'); await sleep(200);
 
@@ -654,10 +654,10 @@ async function startExp(){
   const st=document.getElementById('st1');
   st.textContent='[ DECOMPOSING SYSTEM PARAMETERS... ]';
   await spinReel(REELS[0],300);
-  st.textContent='[ MATERIAL LOCKED — SCANNING FORMAT SPACE... ]';
+  st.textContent='[ MATERIAL LOCKED- SCANNING FORMAT SPACE... ]';
   await sleep(350);
   await spinReel(REELS[1],0);
-  st.textContent='[ FORMAT LOCKED — ISOLATING BEHAVIOUR LAYER... ]';
+  st.textContent='[ FORMAT LOCKED- ISOLATING BEHAVIOUR LAYER... ]';
   await sleep(350);
   await spinReel(REELS[2],0);
   await sleep(500);
